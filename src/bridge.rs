@@ -63,6 +63,8 @@ pub enum CoreUIMsg {
     FederationInfo(ClientConfig),
     AddFederationSuccess,
     FederationListUpdated(Vec<FederationItem>),
+    NeedsInit,
+    Locked,
     Unlocking,
     UnlockSuccess,
     UnlockFailed(String),

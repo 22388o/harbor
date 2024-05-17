@@ -43,6 +43,7 @@ use crate::{
 };
 
 const PEG_IN_TIMEOUT_YEAR: Duration = Duration::from_secs(86400 * 365);
+const HARBOR_FILE_NAME: &str = "harbor.sqlite";
 
 #[derive(Clone)]
 struct HarborCore {
@@ -376,6 +377,19 @@ pub fn run_core() -> Subscription<Message> {
             std::fs::create_dir_all(path.clone()).expect("Could not create datadir");
             log::info!("Using datadir: {path:?}");
 
+            tokio::time::sleep(Duration::from_secs(1)).await;
+
+            // Check if the database file exists already, if so tell UI to unlock
+            if std::fs::metadata(path.join(HARBOR_FILE_NAME)).is_ok() {
+                tx.send(Message::core_msg(None, CoreUIMsg::Locked))
+                    .await
+                    .expect("should send");
+            } else {
+                tx.send(Message::core_msg(None, CoreUIMsg::NeedsInit))
+                    .await
+                    .expect("should send");
+            }
+
             loop {
                 let msg = core_handle.recv().await;
 
@@ -389,7 +403,7 @@ pub fn run_core() -> Subscription<Message> {
                             .expect("should send");
 
                         // attempting to unlock
-                        let db_path = path.join("harbor.sqlite");
+                        let db_path = path.join(HARBOR_FILE_NAME);
                         let db =
                             spawn_blocking(move || setup_db(db_path.to_str().unwrap(), password))
                                 .await

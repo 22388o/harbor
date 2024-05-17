@@ -33,7 +33,6 @@ pub mod routes;
 pub fn main() -> iced::Result {
     pretty_env_logger::init();
     program("Harbor", HarborWallet::update, HarborWallet::view)
-        // .load(HarborWallet::load)
         .font(include_bytes!("../assets/fonts/Inter-Regular.ttf").as_slice())
         .font(include_bytes!("../assets/fonts/Inter-Bold.ttf").as_slice())
         .theme(HarborWallet::theme)
@@ -60,6 +59,13 @@ enum ReceiveStatus {
     Idle,
     Generating,
     WaitingToReceive,
+}
+
+#[derive(Default, Debug, Clone, PartialEq)]
+enum WelcomeStatus {
+    #[default]
+    Loading,
+    NeedsInit,
 }
 
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -124,6 +130,8 @@ pub struct HarborWallet {
     balance_sats: u64,
     transaction_history: Vec<TransactionItem>,
     federation_list: Vec<FederationItem>,
+    // Welcome screen
+    init_status: WelcomeStatus,
     // Lock screen
     password_input_str: String,
     unlock_status: UnlockStatus,
@@ -255,6 +263,7 @@ impl HarborWallet {
                 self.ui_handle = Some(ui_handle);
                 println!("Core loaded");
 
+                // TODO I don't think this is the best place for it
                 focus_input_id("password_unlock_input")
 
                 // Command::none()
@@ -563,6 +572,16 @@ impl HarborWallet {
                     self.receive_address = Some(address);
                     Command::none()
                 }
+                CoreUIMsg::Locked => {
+                    info!("Got locked message");
+                    self.active_route = Route::Unlock;
+                    Command::none()
+                }
+                CoreUIMsg::NeedsInit => {
+                    info!("Got init message");
+                    self.init_status = WelcomeStatus::NeedsInit;
+                    Command::none()
+                }
                 CoreUIMsg::Unlocking => {
                     info!("Got unlocking message");
                     self.unlock_status = UnlockStatus::Unlocking;
@@ -600,6 +619,7 @@ impl HarborWallet {
             Route::History => row![sidebar, crate::routes::history(self)].into(),
             Route::Transfer => row![sidebar, crate::routes::transfer(self)].into(),
             Route::Settings => row![sidebar, crate::routes::settings(self)].into(),
+            Route::Welcome => crate::routes::welcome(self),
         };
 
         active_route

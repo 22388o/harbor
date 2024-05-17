@@ -25,9 +25,13 @@ pub use history::*;
 pub mod settings;
 pub use settings::*;
 
+pub mod welcome;
+pub use welcome::*;
+
 #[derive(Default, PartialEq, Debug, Clone, Copy)]
 pub enum Route {
     #[default]
+    Welcome,
     Unlock,
     Home,
     Mints,

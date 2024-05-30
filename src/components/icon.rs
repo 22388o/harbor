@@ -17,6 +17,7 @@ pub enum SvgIcon {
     SmallClose,
     Bolt,
     Chain,
+    Eye,
 }
 
 pub fn map_icon<'a>(icon: SvgIcon, width: f32, height: f32) -> Svg<'a, Theme> {
@@ -37,6 +38,7 @@ pub fn map_icon<'a>(icon: SvgIcon, width: f32, height: f32) -> Svg<'a, Theme> {
         SvgIcon::SmallClose => Svg::from_path("assets/icons/small_close.svg"),
         SvgIcon::Bolt => Svg::from_path("assets/icons/bolt.svg"),
         SvgIcon::Chain => Svg::from_path("assets/icons/chain.svg"),
+        SvgIcon::Eye => Svg::from_path("assets/icons/eye.svg"),
     }
     .width(width)
     .height(height)
